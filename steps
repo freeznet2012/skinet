@@ -1,0 +1,39 @@
+1. dotnent --info
+2. dotnet new list
+3. dotnet new sln
+4. dotnet new webapi -o API -controllers
+5. dotnet new classlib -o Core
+6. dotnet new classlib -o Infrastructure
+7. dotnet sln add API
+8. dotnet sln add Core
+9. dotnet sln add Infrastructure
+10. dotnet sln list
+11. cd API && dotnet add reference ../Infrastructure/
+12. cd .. && dotnet build
+13. cd API && dotnet watch
+
+14. Download and install docker. it won''t start so do
+    sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+    systemctl --user restart docker-desktop
+
+15. Prepare docker-compose.yml and run it by
+    docker compose up -d
+
+16. Setup Connection String in appsettings based on this
+      "DefaultConnection": "Server=localhost,1433;Database=skinet;User Id=SA;Password=Password@1;TrustServerCertificate=True"
+
+17. Install EF Tool
+    dotnet tool install --global dotnet-ef --version 8.0.8
+
+18. dotnet ef migrations add InitialCreate -s API -p Infrastructure
+
+19 to remove any migrations
+    dotnet ef migrations remove -s API -p Infrastructure
+
+20. to apply migration
+    dotnet ef database update -s API -p Infrastructure
+
+21. Create git ignor
+    dotnet new gitignore
+
+22.

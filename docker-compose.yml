@@ -1,0 +1,17 @@
+services:
+  sql:
+    image: mcr.microsoft.com/azure-sql-edge
+    container_name: azure-sql-edge
+    environment:
+      ACCEPT_EULA: "1"
+      MSSQL_SA_PASSWORD: "Password@1"
+      MSSQL_DATABASE: "skinet"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+    restart: always
+    restart: always
+
+volumes:
+  sql_data:
