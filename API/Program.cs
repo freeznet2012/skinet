@@ -22,4 +22,20 @@ if (app.Environment.IsDevelopment())
 
 app.MapControllers();
 
+try
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+    await context.Database.MigrateAsync();
+    if (app.Environment.IsDevelopment())
+    {
+        await StoreContextSeed.SeedAsync(context);
+    }
+}
+catch (Exception exception)
+{
+    Console.WriteLine(exception);
+    throw;
+}
+
 app.Run();

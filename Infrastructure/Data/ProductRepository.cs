@@ -7,14 +7,51 @@ namespace Infrastructure.Data;
 /// <inheritdoc />
 public class ProductRepository(StoreContext storeContext) : IProductRepository
 {
-    public async Task<IReadOnlyCollection<Product>> GetProductsAsync()
+    public async Task<IReadOnlyCollection<Product>> GetProductsAsync(string? brand, string? type, string? sort)
     {
-        return await storeContext.Products.ToListAsync();
+        var query =  storeContext.Products.AsQueryable();
+        if (!string.IsNullOrWhiteSpace(brand))
+        {
+            query = query.Where(p => p.Brand.Contains(brand));
+        }
+
+        if (!string.IsNullOrWhiteSpace(type))
+        {
+            query = query.Where(p => p.Type.Contains(type));
+        }
+
+        if (!string.IsNullOrWhiteSpace(sort))
+        {
+            query = sort switch
+            {
+                "priceAsc" => query.OrderBy(p => p.Price),
+                "priceDesc" => query.OrderByDescending(p => p.Price),
+                _ => query.OrderBy(p => p.Name),
+            };
+        }
+
+        return await query.ToListAsync();
     }
 
     public async Task<Product?> GetProductByIdAsync(int id)
     {
         return await storeContext.Products.FindAsync(id);
+    }
+
+    public async Task<IReadOnlyCollection<string>> GetBrandsAsync()
+    {
+        return await storeContext.Products
+            .Select(p => p.Brand)
+            .Distinct()
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyCollection<string>> GetTypesAsync()
+    {
+        return await storeContext.Products
+            .Select(p => p.Type)
+            .Distinct()
+            .ToListAsync();
     }
 
     public void AddProduct(Product product)

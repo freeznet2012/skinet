@@ -36,4 +36,6 @@
 21. Create git ignore
     dotnet new gitignore
 
-22.
+22. to dropd database
+        dotnet ef database drop --project Infrastructure/Infrastructure.csproj --startup-project API/API.csproj --context Infrastructure.Data.StoreContext
+

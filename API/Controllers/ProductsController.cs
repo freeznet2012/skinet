@@ -17,9 +17,9 @@ public class ProductsController(IProductRepository productRepository) : Controll
     /// </summary>
     /// <returns>An enumerable collection of <see cref="Product"/> objects.</returns>
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<Product>>> GetProducts()
+    public async Task<ActionResult<IReadOnlyCollection<Product>>> GetProducts(string? brand, string? type, string? sort)
     {
-        return Ok(await productRepository.GetProductsAsync());
+        return Ok(await productRepository.GetProductsAsync(brand, type, sort));
     }
 
     /// <summary>
@@ -37,6 +37,18 @@ public class ProductsController(IProductRepository productRepository) : Controll
         }
 
         return product;
+    }
+
+    [HttpGet("brands")]
+    public async Task<ActionResult<IReadOnlyCollection<string>>> GetBrandsAsync()
+    {
+        return Ok(await productRepository.GetBrandsAsync());
+    }
+
+    [HttpGet("types")]
+    public async Task<ActionResult<IReadOnlyCollection<string>>> GetTypesAsync()
+    {
+        return Ok(await productRepository.GetTypesAsync());
     }
 
     /// <summary>
