@@ -1,7 +1,7 @@
 using Core.Entities;
-using Infrastructure.Data;
+using Core.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
@@ -10,28 +10,16 @@ namespace API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/{controller}")]
-public class ProductsController : ControllerBase
+public class ProductsController(IProductRepository productRepository) : ControllerBase
 {
-    private readonly StoreContext _context;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ProductsController"/> class with the specified logger.
-    /// </summary>
-    /// <param name="context">The db context instance used for store.</param>
-
-    public ProductsController(StoreContext context)
-    {
-        _context = context;
-    }
-
     /// <summary>
     /// Gets a list of products.
     /// </summary>
     /// <returns>An enumerable collection of <see cref="Product"/> objects.</returns>
     [HttpGet]
-    public async Task<IEnumerable<Product>> GetProducts()
+    public async Task<ActionResult<IReadOnlyCollection<Product>>> GetProducts()
     {
-        return await _context.Products.ToListAsync();
+        return Ok(await productRepository.GetProductsAsync());
     }
 
     /// <summary>
@@ -42,7 +30,7 @@ public class ProductsController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await productRepository.GetProductByIdAsync(id);
         if (product == null)
         {
             return NotFound();
@@ -52,18 +40,21 @@ public class ProductsController : ControllerBase
     }
 
     /// <summary>
-    /// Creates a Product
+    /// Creates a Product.
     /// </summary>
     /// <param name="product">The Product that needs to be created.</param>
     /// <returns>An object of class <see cref="Product"/> which was created.</returns>
     [HttpPost]
     public async Task<ActionResult<Product>> CreateProduct(Product product)
     {
-        _context.Products.Add(product);
+        productRepository.AddProduct(product);
 
-        await _context.SaveChangesAsync();
+        if (await productRepository.SaveChangesAsync())
+        {
+            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+        }
 
-        return product;
+        return BadRequest("Product could not be created");
     }
 
     /// <summary>
@@ -84,16 +75,19 @@ public class ProductsController : ControllerBase
     {
         ArgumentNullException.ThrowIfNull(product);
 
-        if (id != product.Id || !ProductExists(id))
+        if (id != product.Id || !productRepository.ProductExists(id))
         {
             return BadRequest("Cannot update this product");
         }
 
-        _context.Entry(product).State = EntityState.Modified;
+        productRepository.UpdateProduct(product);
 
-        await _context.SaveChangesAsync();
+        if (await productRepository.SaveChangesAsync())
+        {
+            return NoContent();
+        }
 
-        return NoContent();
+        return BadRequest("Product could not be updated");
     }
 
     /// <summary>
@@ -110,22 +104,19 @@ public class ProductsController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteProduct(int id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await productRepository.GetProductByIdAsync(id);
         if (product == null)
         {
             return NotFound();
         }
 
-        _context.Products.Remove(product);
+        productRepository.DeleteProduct(product);
 
-        await _context.SaveChangesAsync();
+        if (await productRepository.SaveChangesAsync())
+        {
+            return NoContent();
+        }
 
-        return NoContent();
-    }
-
-
-    private bool ProductExists(int id)
-    {
-        return _context.Products.Any(x => x.Id == id);
+        return BadRequest("Product could not be deleted");
     }
 }

@@ -33,7 +33,7 @@
 20. to apply migration
     dotnet ef database update -s API -p Infrastructure
 
-21. Create git ignor
+21. Create git ignore
     dotnet new gitignore
 
 22.

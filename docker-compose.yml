@@ -11,7 +11,6 @@ services:
     volumes:
       - sql_data:/var/opt/mssql
     restart: always
-    restart: always
 
 volumes:
   sql_data:
