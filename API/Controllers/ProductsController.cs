@@ -1,5 +1,6 @@
 using Core.Entities;
 using Core.Interfaces;
+using Core.Specification;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +20,9 @@ public class ProductsController(IGenericRepository<Product> productRepository) :
     [HttpGet]
     public async Task<ActionResult<IReadOnlyCollection<Product>>> GetProducts(string? brand, string? type, string? sort)
     {
-        return Ok(await productRepository.ListAllAsync());
+        var spec = new ProductSpecification(brand, type, sort);
+        var products = await productRepository.ListAsync(spec);
+        return Ok(products);
     }
 
     /// <summary>
@@ -39,17 +42,20 @@ public class ProductsController(IGenericRepository<Product> productRepository) :
         return product;
     }
 
-    // [HttpGet("brands")]
-    // public async Task<ActionResult<IReadOnlyCollection<string>>> GetBrandsAsync()
-    // {
-    //     return Ok(await productRepository.GetBrandsAsync());
-    // }
-    //
-    // [HttpGet("types")]
-    // public async Task<ActionResult<IReadOnlyCollection<string>>> GetTypesAsync()
-    // {
-    //     return Ok(await productRepository.GetTypesAsync());
-    // }
+    [HttpGet("brands")]
+    public async Task<ActionResult<IReadOnlyCollection<string>>> GetBrandsAsync()
+    {
+        var spec = new BrandListSpecification();
+        
+        return Ok(await productRepository.ListAsync(spec));
+    }
+    
+    [HttpGet("types")]
+    public async Task<ActionResult<IReadOnlyCollection<string>>> GetTypesAsync()
+    {
+        var spec = new TypeListSpecification();
+        return Ok(await productRepository.ListAsync(spec));
+    }
 
     /// <summary>
     /// Creates a Product.
